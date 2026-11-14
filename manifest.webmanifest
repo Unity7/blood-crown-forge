@@ -1,0 +1,63 @@
+{
+  "id": "/blood-crown-skill-forge",
+  "name": "Blood Crown — Skill Codex & Character Forge",
+  "short_name": "BC Skill Forge",
+  "description": "Design 3-tree hero kits from 138+ Blood Crown skills, switch into Hero Builds & Playstyle to craft 110-point builds, and watch live 60fps isometric combo choreography.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0a090d",
+  "theme_color": "#120f18",
+  "categories": ["games", "utilities", "productivity"],
+  "icons": [
+    {
+      "src": "assets/pwa/favicon-64.png",
+      "sizes": "64x64",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/pwa/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/pwa/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/pwa/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Hero Builds & Playstyle",
+      "short_name": "Hero Builds",
+      "description": "Browse & create 110-point builds and play live 4-step combo loops",
+      "url": "./?mode=builds",
+      "icons": [{ "src": "assets/pwa/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Skill Codex Lookup",
+      "short_name": "Skill Codex",
+      "description": "Search & filter all 138+ skills and original game icons",
+      "url": "./?mode=codex",
+      "icons": [{ "src": "assets/pwa/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Create / Clone Character",
+      "short_name": "New Hero",
+      "description": "Launch the New Character Wizard or clone a base hero",
+      "url": "./?action=new-hero",
+      "icons": [{ "src": "assets/pwa/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

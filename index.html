@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#120f18" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BC Skill Forge" />
+  <meta name="description" content="Blood Crown Skill Codex, Combat Forge &amp; Pacing Lab PWA — Author hero trees &amp; builds, equip Weapon Mini-Builds &amp; [A/B/C] Mutators, test live 60fps isometric Poise/HTK physics, and benchmark against 2,000-run D2R Oracle fights." />
+  <title>Blood Crown — Skill Codex, Combat Forge &amp; Pacing Lab PWA</title>
+  <link rel="icon" type="image/png" href="assets/pwa/favicon-64.png" />
+  <link rel="apple-touch-icon" href="assets/pwa/apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-mobile-tab="tree">
+  <div class="app-shell">
+    <!-- =================================================================
+         NATIVE MOBILE SPA TOP HEADER (SHOWN ON PHONES / TABLETS <= 900PX)
+         ================================================================= -->
+    <header id="mobileAppHeader" class="mobile-app-header" aria-label="Mobile App Header">
+      <button type="button" id="btnMobileHeroPicker" class="mob-hero-pill" title="Switch or create hero">
+        <img id="mobHeroAvatar" src="assets/portraits/amazonicon.png" alt="Hero" />
+        <div class="mob-hero-meta">
+          <span class="mob-hero-name-row"><span id="mobHeroName">Huntress</span> <span class="mob-caret">▾</span></span>
+          <span id="mobHeroSub" class="mob-hero-sub">Kit Architect · 3 Trees</span>
+        </div>
+      </button>
+
+      <div class="mob-header-right">
+        <div class="mob-mode-seg" role="group" aria-label="Workflow Mode">
+          <button type="button" id="btnMobileModeTrees" class="mob-seg-btn active">🛠️ Trees</button>
+          <button type="button" id="btnMobileModeBuilds" class="mob-seg-btn">⚔️ Builds</button>
+        </div>
+        <button type="button" id="btnMobileTutorialVideo" class="mob-icon-btn" title="Watch 36s Tutorial Video">🎬</button>
+        <button type="button" id="btnMobileUndo" class="mob-icon-btn" title="Undo" disabled>↩</button>
+        <button type="button" id="btnMobileMenu" class="mob-icon-btn" title="Backup, Share &amp; Reset">⋯</button>
+      </div>
+    </header>
+
+    <!-- =================================================================
+         STICKY PWA TOP BAR: MODE SWITCHER + INSTANT SEARCH + QOL ACTIONS
+         ================================================================= -->
+    <header class="topbar">
+      <div class="brand">
+        <img src="assets/pwa/icon-192.png" alt="Blood Crown" class="brand-logo" />
+        <div>
+          <div class="brand-row">
+            <h1>BLOOD CROWN</h1>
+            <span class="brand-sub">SKILL CODEX · COMBAT FORGE · PACING LAB</span>
+            <span id="syncStatusPill" class="sync-pill" title="Saves automatically to device &amp; hosted server">☁️ Saved</span>
+          </div>
+          <p>7 Classes &amp; Custom Heroes · 10 Weapon Physics Families · [A/B/C] Mutators · Live D2R vs Blood Crown Pacing Matrix</p>
+        </div>
+      </div>
+
+      <!-- Primary Purpose Switcher -->
+      <nav class="mode-switcher" aria-label="Workspace Mode">
+        <button id="modeBtnStudio" class="mode-tab active" data-mode="trees" title="Architect Mode: Decide which skills belong in this hero's 3 class trees">
+          🛠️ 1. Skill Trees
+        </button>
+        <button id="modeBtnBuilds" class="mode-tab" data-mode="builds" title="Build Planner Mode: Create &amp; save specific builds, equip Weapon Mini-Builds, and watch gameplay">
+          ⚔️ 2. Builds &amp; Weapons <span id="heroBuildsCountBadge" class="tab-count">4</span>
+        </button>
+        <button id="modeBtnCodex" class="mode-tab" data-mode="codex" title="Browse &amp; search all 138 skills, 21 mutators, and 10 weapon archetypes">
+          📖 3. Codex <span id="codexCountBadge" class="tab-count">138</span>
+        </button>
+        <button id="modeBtnMatrix" class="mode-tab" data-mode="matrix" title="Master Game Matrix: Live HTK/Poise Simulator, 15-Row Two-Box Pacing Meter, D2R 2,000-Run Oracle &amp; Engine Hooks">
+          ⚖️ 4. Game Matrix &amp; Pacing <span id="matrixStatusBadge" class="tab-count">15/15</span>
+        </button>
+      </nav>
+
+      <!-- Global Quick Search + QoL Actions -->
+      <div class="top-actions">
+        <div class="global-search-wrap">
+          <span class="search-icon">🔍</span>
+          <input id="globalSearchInput" type="search" placeholder="Search skills, games, stuns, AoE... ( / )" autocomplete="off" />
+          <kbd class="search-kbd">/</kbd>
+        </div>
+        <button id="btnUndo" class="btn btn-icon" title="Undo (Ctrl+Z)" disabled>↩</button>
+        <button id="btnRedo" class="btn btn-icon" title="Redo (Ctrl+Y)" disabled>↪</button>
+        <button id="btnDataModal" class="btn btn-outline" title="Export, Import, or Share Builds">📤 Backup / Share</button>
+        <button id="btnOpenTutorialVideo" class="btn btn-emerald" title="Watch the 36-second 1080p Forge &amp; Arena walkthrough video">🎬 Tutorial</button>
+        <button id="btnToggleGuide" class="btn btn-outline" title="Show or hide the 3-step quick guide">❓ Guide</button>
+        <button id="btnInstallPwa" class="btn btn-gold" title="Install Blood Crown Skill Forge as a standalone desktop/mobile app">📲 Install App</button>
+      </div>
+    </header>
+
+    <!-- =================================================================
+         DISMISSIBLE 3-STEP QUICK WORKFLOW GUIDE (CRYSTAL-CLEAR PURPOSE)
+         ================================================================= -->
+    <section id="quickGuideBanner" class="quick-guide-banner">
+      <div class="guide-steps">
+        <div class="guide-step">
+          <span class="step-num">1</span>
+          <div>
+            <strong>1. Design Hero Skill Trees (Class Kit)</strong>
+            <p>In <b>🛠️ Edit Skill Trees</b>, decide which skills belong in each class tree — drag from the 138-skill palette, rip, swap, edit nodes, or clone any hero.</p>
+          </div>
+        </div>
+        <div class="guide-step">
+          <span class="step-num">2</span>
+          <div>
+            <strong>2. Flip to Hero Builds &amp; Spend Points</strong>
+            <p>Switch to <b>⚔️ Builds &amp; Playstyle</b> to create &amp; compare specific builds using those trees (<b>Click +1</b>, <b>Shift+Click +5</b>, <b>Right-Click −1</b>, auto-prereqs).</p>
+          </div>
+        </div>
+        <div class="guide-step">
+          <span class="step-num">3</span>
+          <div>
+            <strong>3. Watch the Gameplay Style Live</strong>
+            <p>Hit <b>▶ Play Build Combo</b> to watch your hero execute your build's 4–5 skill combat rotation back-to-back in the live 60fps isometric arena.</p>
+          </div>
+        </div>
+      </div>
+      <div class="guide-banner-actions">
+        <button id="btnGuideWatchVideo" class="btn btn-xs btn-gold">🎬 Watch 36s Video</button>
+        <button id="btnHideGuide" class="btn btn-xs btn-outline guide-dismiss">Got It · Hide</button>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         MODE A: CHARACTER, SKILL TREE ARCHITECT & BUILD PLAYSTYLE STUDIO
+         ================================================================= -->
+    <div id="studioWorkspace">
+      <!-- TOP HERO ROSTER + ACTIVE HERO ACTION TOOLBAR -->
+      <section class="hero-select-stage" id="heroSelectStage">
+        <div class="stage-eyebrow">
+          <div class="eyebrow-left">
+            <span>HERO ROSTER (7 BASE CLASSES + YOUR CUSTOM / CLONED HEROES)</span>
+          </div>
+          <div class="eyebrow-right">
+            <span id="pointsSummaryBadge" class="points-pill">Skill Points: 0 / 110</span>
+            <button id="btnOpenNewHeroWizard" class="btn btn-xs btn-gold">✨ + New Character</button>
+            <button id="btnCloneCurrentHero" class="btn btn-xs btn-emerald" title="Duplicate the selected hero so you can rip &amp; replace freely">📋 Clone Active Hero</button>
+          </div>
+        </div>
+
+        <div id="heroPortraitBar" class="hero-portrait-bar"></div>
+
+        <!-- Selected Hero Identity + Workflow Switch (Edit Trees vs Hero Builds) + Direct Hero Controls -->
+        <div id="heroSpotlightBanner" class="hero-spotlight-banner"></div>
+      </section>
+
+      <!-- 3-COLUMN STUDIO WORKBENCH:
+           1. LEFT DOCK: SKILL PALETTE (IN TREE EDIT MODE) OR BUILD LOADOUTS DECK (IN BUILDS MODE)
+           2. CENTER: 3x4 SKILL TREE (KIT ARCHITECT OR CLEAN 110-PT BUILD CALCULATOR)
+           3. RIGHT: BUILD COMBO ROTATION + 60FPS LIVE VISUALIZER + MECHANICS -->
+      <main id="studioGrid" class="studio-grid">
+        <!-- COLUMN 1A: DOCKED SKILL SEARCH & PALETTE (SHOWN IN 1. EDIT SKILL TREES) -->
+        <aside id="skillPaletteDock" class="panel palette-panel">
+          <div class="palette-head">
+            <div>
+              <h2>📚 Skill Palette <span id="paletteCountLabel" class="muted-inline">(138)</span></h2>
+              <p class="muted-sub">Search &amp; click <b>+ Slot</b> or <b>drag</b> onto the tree</p>
+            </div>
+            <div class="palette-head-btns">
+              <button id="btnCreateSkillFromPalette" class="btn btn-xs btn-gold" title="Create a brand-new custom skill">✨ + New Skill</button>
+              <button id="btnCollapsePalette" class="btn btn-xs btn-outline" title="Collapse or expand dock">◀</button>
+            </div>
+          </div>
+
+          <!-- Active Target Slot Indicator (when replacing or filling a specific cell!) -->
+          <div id="targetSlotBanner" class="target-slot-banner hidden"></div>
+
+          <!-- Search + Filter Pills -->
+          <div class="palette-filters">
+            <input id="paletteSearchInput" type="search" placeholder="Filter by name, stun, freeze, pierce, hook, DotA 2..." autocomplete="off" />
+            <div class="palette-select-row">
+              <select id="paletteGameSelect" title="Filter by Original Game"></select>
+              <select id="paletteHeroSelect" title="Filter by Origin Hero"></select>
+            </div>
+            <div id="paletteTagPills" class="tag-pill-strip"></div>
+          </div>
+
+          <!-- Scrollable Draggable Skill Cards -->
+          <div id="paletteSkillList" class="palette-skill-list"></div>
+        </aside>
+
+        <!-- COLUMN 1B: HERO BUILD LOADOUTS & PLAYSTYLE DECK (SHOWN IN 2. BUILDS & PLAYSTYLE) -->
+        <aside id="buildLoadoutDock" class="panel build-dock-panel hidden">
+          <div class="palette-head">
+            <div>
+              <h2>⚔️ <span id="buildDockHeroName">Huntress</span> Builds <span id="buildDockCount" class="muted-inline">(4)</span></h2>
+              <p class="muted-sub">Create &amp; test specific builds using this hero's trees</p>
+            </div>
+            <div class="palette-head-btns">
+              <button id="btnCollapseBuildsDock" class="btn btn-xs btn-outline" title="Collapse or expand builds dock">◀</button>
+            </div>
+          </div>
+
+          <div class="build-dock-toolbar">
+            <button id="btnNewBuildLoadout" class="btn btn-xs btn-gold" title="Start a fresh 0-point build on this hero's current trees">✨ + New Build</button>
+            <button id="btnCloneBuildLoadout" class="btn btn-xs btn-emerald" title="Duplicate the active build to experiment with a variant">📋 Duplicate</button>
+            <button id="btnAutoFillBuild" class="btn btn-xs btn-outline" title="Smart-allocate ~90 points &amp; rotation around the active tree">🪄 Auto-Build</button>
+          </div>
+
+          <!-- Saved Builds List for Active Hero -->
+          <div id="heroBuildsList" class="hero-builds-list"></div>
+
+          <!-- Active Build Quick Editor (Name, Playstyle Tag, Tree Split, Loop Notes) -->
+          <div id="activeBuildSummaryBox" class="active-build-summary-box"></div>
+        </aside>
+
+        <!-- COLUMN 2: INTERACTIVE 3x4 SKILL TREE -->
+        <section id="treePanelStage" class="panel tree-panel">
+          <!-- Mode Context Callout Bar (makes Tree Architect vs Build Calculator 100% obvious) -->
+          <div id="treeModeContextBar" class="tree-mode-context-bar"></div>
+
+          <div class="tree-panel-head">
+            <div class="tree-title-block">
+              <div class="tree-title-row">
+                <button id="btnExpandPalette" class="btn btn-xs btn-outline hidden" title="Open Left Dock">📚 Dock ▶</button>
+                <h2 id="activeTreeTitle">Skill Tree</h2>
+                <button id="btnEditTreeMeta" class="btn btn-xs btn-outline" title="Rename this tree &amp; weapon focus">✏️ Rename</button>
+              </div>
+              <p id="activeTreeSubtitle" class="muted-sub"></p>
+            </div>
+            <div class="tree-head-btns">
+              <button id="btnAutoWireTree" class="btn btn-xs btn-outline" title="Automatically connect Tier I → II → III → IV prerequisite arrows">⚡ Auto-Arrows</button>
+              <button id="btnClearTreePoints" class="btn btn-xs btn-outline" title="Reset active build skill points to 0">↺ Zero Points</button>
+              <button id="btnEmptyTreeSlots" class="btn btn-xs btn-danger-outline" title="Rip out all nodes in this tree to fill from scratch">🧹 Rip Tree</button>
+            </div>
+          </div>
+
+          <!-- 5 Tree Tabs (Trees 1, 2, 3 + Mobility + Warband) -->
+          <div id="treeTabsBar" class="tree-tabs-bar"></div>
+
+          <!-- Classic 3-Column x 4-Tier Stone Skill Tree Board with SVG Prerequisite Arrows -->
+          <div class="d2-tree-board-wrap">
+            <div id="d2TreeBoard" class="d2-tree-board">
+              <svg id="treeConnectorSvg" class="tree-connector-svg" aria-hidden="true"></svg>
+              <div id="treeGridCells" class="tree-grid-cells"></div>
+            </div>
+          </div>
+
+          <!-- Mobile Thumb Action Dock for Currently Selected Node (Shown on <= 900px) -->
+          <div id="mobileTreeActionDock" class="mobile-tree-action-dock"></div>
+
+          <!-- Tree Rule / Quick Interaction Hint -->
+          <div id="treeRuleFooter" class="tree-rule-footer"></div>
+        </section>
+
+        <!-- COLUMN 3: BUILD COMBO SEQUENCER + SELECTED NODE INSPECTOR + 60FPS ISOMETRIC VISUALIZER -->
+        <section id="previewPanelStage" class="panel preview-panel">
+          <!-- -1. Sticky Breadcrumb & 1-Tap Return Bar (Hero > Tree > Skill + Prev/Next Skill Stepper) -->
+          <div id="arenaBreadcrumbBar" class="arena-breadcrumb-bar"></div>
+
+          <!-- 0. Active Build Gameplay Style & Combo Rotation Bar (Visible in Builds Mode!) -->
+          <div id="buildComboStage" class="build-combo-stage hidden"></div>
+
+          <!-- 1. Selected Skill Header + Direct Edit / Clone / Replace Buttons -->
+          <div id="previewSkillHeader" class="preview-skill-header"></div>
+
+          <!-- 2. Bespoke Live Isometric Skill Visualizer -->
+          <div class="viz-stage-card">
+            <div class="viz-toolbar">
+              <div class="viz-status-left">
+                <button type="button" id="btnVizQuickBack" class="btn btn-xs btn-outline viz-quick-back-btn" title="Return to Skill Tree">← Tree</button>
+                <span class="live-dot"></span>
+                <span id="vizCastBanner" class="viz-cast-banner">LIVE SKILL PREVIEW</span>
+              </div>
+              <div class="viz-controls">
+                <button id="btnCastSelected" class="btn btn-xs btn-gold">▶ Cast</button>
+                <button id="btnCastWeaponSwing" class="btn btn-xs btn-outline" title="Test equipped Weapon Archetype auto-attack cleave, pierce &amp; Poise stagger">⚔️ Swing</button>
+                <button id="btnAutoLoop" class="btn btn-xs btn-outline active">⟳ Auto: ON</button>
+                <button id="btnSlowMo" class="btn btn-xs btn-outline">0.45× Slow</button>
+                <button id="btnRunCombo" class="btn btn-xs btn-emerald">▶ Chain Tree</button>
+                <button id="btnResetArena" class="btn btn-xs btn-outline">↺ Reset</button>
+              </div>
+            </div>
+
+            <div class="canvas-holder">
+              <canvas id="isoArenaCanvas" width="680" height="320"></canvas>
+              <div class="canvas-floor-hint">Tap or click anywhere on the isometric floor to aim &amp; cast · Grounded HTK &amp; 12% Max-HP Poise Physics Active</div>
+            </div>
+
+            <div id="arenaCombatTelemetry" class="arena-combat-telemetry"></div>
+          </div>
+
+          <!-- 3. Deep Skill Mechanics + Original Game Skill Icons & Side-by-Side Comparison -->
+          <div id="deepSkillBreakdown" class="deep-skill-breakdown"></div>
+        </section>
+      </main>
+    </div>
+
+    <!-- =================================================================
+         MODE B: FULL-SCREEN QUICK SKILL LOOKUP CODEX (EASY ENCYCLOPEDIA)
+         ================================================================= -->
+    <section id="codexWorkspace" class="codex-workspace hidden">
+      <div class="panel codex-header-panel">
+        <div class="codex-top-row">
+          <div>
+            <h2>📖 Blood Crown Skill Lookup Codex &amp; Original Game Reference</h2>
+            <p class="muted-sub">Instantly search every skill by effect (stun, freeze, slow, pierce, AoE, DoT, hook), class, or original inspiration game — click any card to preview live, edit, or slot into <b id="codexActiveHeroLabel">Huntress</b>.</p>
+          </div>
+          <div class="codex-top-btns">
+            <button id="btnCodexCreateSkill" class="btn btn-gold">✨ + Author New Skill</button>
+            <button id="btnCodexBackToStudio" class="btn btn-outline">🛠️ Go to Active Hero Tree →</button>
+          </div>
+        </div>
+
+        <div class="codex-filter-grid">
+          <input id="codexSearchInput" type="search" placeholder="Type skill name, original game skill (Frozen Orb, Meat Hook, Lightning Fury, Spear of Mars), or mechanic..." autocomplete="off" />
+          <div id="codexTagBar" class="filter-pills"></div>
+          <div id="codexGameBar" class="filter-pills"></div>
+          <div id="codexHeroBar" class="filter-pills"></div>
+        </div>
+      </div>
+
+      <div id="codexGrid" class="codex-card-grid"></div>
+    </section>
+
+    <!-- =================================================================
+         MODE C: MASTER GAME MATRIX, COMBAT SIMULATOR & D2R PACING LAB
+         ================================================================= -->
+    <section id="matrixWorkspace" class="matrix-workspace hidden" aria-label="Blood Crown Master Game Matrix and Pacing Lab"></section>
+
+    <!-- =================================================================
+         NATIVE MOBILE SPA BOTTOM NAVIGATION BAR (SHOWN ON <= 900PX)
+         ================================================================= -->
+    <nav id="mobileBottomNav" class="mobile-bottom-nav" aria-label="Primary Mobile Navigation">
+      <button type="button" class="mob-nav-tab active" data-mob-tab="tree">
+        <span class="mob-nav-ico">🌳</span>
+        <span class="mob-nav-lbl">Tree</span>
+      </button>
+      <button type="button" class="mob-nav-tab" data-mob-tab="builds">
+        <span class="mob-nav-ico">⚔️<span id="mobNavBuildsBadge" class="mob-nav-badge">4</span></span>
+        <span class="mob-nav-lbl">Builds</span>
+      </button>
+      <button type="button" class="mob-nav-tab" data-mob-tab="arena">
+        <span class="mob-nav-ico">🎬</span>
+        <span class="mob-nav-lbl">Arena</span>
+      </button>
+      <button type="button" class="mob-nav-tab" data-mob-tab="matrix">
+        <span class="mob-nav-ico">⚖️</span>
+        <span class="mob-nav-lbl">Matrix</span>
+      </button>
+      <button type="button" class="mob-nav-tab" data-mob-tab="skills">
+        <span class="mob-nav-ico">📚</span>
+        <span class="mob-nav-lbl">Skills</span>
+      </button>
+      <button type="button" class="mob-nav-tab" data-mob-tab="heroes">
+        <span class="mob-nav-ico">🦸</span>
+        <span class="mob-nav-lbl">Heroes</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- =================================================================
+       MODAL 1: NEW / EDIT / CLONE CHARACTER WIZARD
+       ================================================================= -->
+  <div id="heroWizardModal" class="modal-backdrop hidden">
+    <div class="modal-card modal-medium">
+      <div class="modal-head">
+        <div>
+          <h3 id="heroModalTitle">✨ Create New Character</h3>
+          <p id="heroModalSub" class="muted-sub">Start from a clean blank slate or clone an existing hero template to rip &amp; replace skills</p>
+        </div>
+        <button class="btn-close" data-close="heroWizardModal">✕</button>
+      </div>
+
+      <div class="form-grid">
+        <label id="heroTemplateRow" class="full-span">
+          Starting Blueprint
+          <select id="hwTemplateSelect">
+            <option value="blank">🧱 Blank Slate (Empty 3×4 Trees — pick &amp; drag skills from scratch)</option>
+            <option value="clone:huntress">📋 Clone Huntress (Spear · Throwing · Bow — ready to rip &amp; replace)</option>
+            <option value="clone:magister">📋 Clone Magister (Spellblade · Cryo/Gravity · Pyre — ready to rip &amp; replace)</option>
+            <option value="clone:gravekeeper">📋 Clone Gravekeeper (Bone · Plague/Curse · Scythe — ready to rip &amp; replace)</option>
+            <option value="clone:bastion">📋 Clone Bastion (Shield · War-Standard · Pollaxe — ready to rip &amp; replace)</option>
+            <option value="clone:ravager">📋 Clone Ravager (2H Cleave · Throwing Axes · Warcry/Hook — ready to rip &amp; replace)</option>
+            <option value="clone:wildwarden">📋 Clone Wildwarden (Storm/Boulder · Shapeshift · Beast Pack — ready to rip &amp; replace)</option>
+            <option value="clone:nightblade">📋 Clone Nightblade (Twin-Dagger · Traps/Sapper · Martial Kicks — ready to rip &amp; replace)</option>
+          </select>
+        </label>
+
+        <label>
+          Character Name
+          <input id="hwName" type="text" placeholder="e.g. Valkyrie Outrider" />
+        </label>
+        <label>
+          Archetype / Subtitle
+          <input id="hwTitle" type="text" placeholder="e.g. Frost-Harpoon &amp; Volley Skirmisher" />
+        </label>
+
+        <label class="full-span">
+          Playstyle &amp; Combat Identity
+          <textarea id="hwIdentity" rows="2" placeholder="Describe how this character plays, controls space, and chains skills..."></textarea>
+        </label>
+
+        <div class="full-span">
+          <span class="field-label">Choose Hero Portrait (36 HD Portraits)</span>
+          <div id="hwPortraitGrid" class="portrait-picker-grid"></div>
+        </div>
+
+        <div class="full-span tree-names-box">
+          <div class="field-label">3 Class Combat Trees (Names &amp; Weapon Focus)</div>
+          <div class="tree-rename-rows">
+            <input id="hwTree1Name" type="text" placeholder="Tree I Name (e.g. Harpoon &amp; Pike)" />
+            <input id="hwTree1Weap" type="text" placeholder="Tree I Weapons (e.g. Spear / Shield)" />
+            <input id="hwTree2Name" type="text" placeholder="Tree II Name (e.g. Cryo Volley)" />
+            <input id="hwTree2Weap" type="text" placeholder="Tree II Weapons (e.g. Longbow / Javelin)" />
+            <input id="hwTree3Name" type="text" placeholder="Tree III Name (e.g. Shadow Traps)" />
+            <input id="hwTree3Weap" type="text" placeholder="Tree III Weapons (e.g. Claws / Gadgets)" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-outline" data-close="heroWizardModal">Cancel</button>
+        <button id="btnSaveHeroWizard" class="btn btn-gold">💾 Save Character</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       MODAL 2: FULL NODE & SKILL EDITOR (EDIT ANY NODE OR CREATE NEW SKILL)
+       ================================================================= -->
+  <div id="nodeEditorModal" class="modal-backdrop hidden">
+    <div class="modal-card modal-wide">
+      <div class="modal-head">
+        <div>
+          <h3 id="nodeEditorTitle">✏️ Edit Skill Node</h3>
+          <p id="nodeEditorSub" class="muted-sub">Customize icon, name, grid position, prerequisite arrow, live animation, and Blood Crown mechanics</p>
+        </div>
+        <button class="btn-close" data-close="nodeEditorModal">✕</button>
+      </div>
+
+      <div class="node-editor-layout">
+        <!-- Left Side: Core Properties + Mechanics -->
+        <div class="form-grid">
+          <label>
+            Skill Name
+            <input id="neName" type="text" placeholder="e.g. Glacial Meat-Hook" />
+          </label>
+          <label>
+            Cast / Delivery Type
+            <select id="neCastType">
+              <option value="Skillshot">Skillshot (Line / Pierce)</option>
+              <option value="Cone AoE">Cone / Fan Volley AoE</option>
+              <option value="Zone AoE">Targeted Zone AoE / DoT</option>
+              <option value="Chain AoE">Ricochet / Split Chain AoE</option>
+              <option value="Melee Strike">Melee Thrust / Cleave</option>
+              <option value="Dash / Leap">Mobility Dash / Seismic Leap</option>
+              <option value="Pull / Grapple">Hook Pull / Wall-Pin Crowd Control</option>
+              <option value="Counter / Barrier">Active Parry / Wall Barrier</option>
+              <option value="Summon / Sentry">Autonomous Turret / Warband Summon</option>
+              <option value="Aura / Stance">Aura / Shapeshift / Stance</option>
+              <option value="Passive">Passive Mastery</option>
+            </select>
+          </label>
+
+          <label>
+            Tree Tier (Row I–IV)
+            <select id="neTier">
+              <option value="1">Tier I — Opener (Row 1)</option>
+              <option value="2">Tier II — Core (Row 2)</option>
+              <option value="3">Tier III — Heavy Payoff (Row 3)</option>
+              <option value="4">Tier IV — Capstone (Row 4)</option>
+            </select>
+          </label>
+          <label>
+            Tree Column (Left / Mid / Right)
+            <select id="neCol">
+              <option value="0">Column 1 — Left Branch</option>
+              <option value="1">Column 2 — Center Branch</option>
+              <option value="2">Column 3 — Right Branch</option>
+            </select>
+          </label>
+
+          <label>
+            Prerequisite Skill Arrow
+            <select id="nePrereq"></select>
+          </label>
+          <label>
+            Max Skill Rank
+            <input id="neMaxRank" type="number" min="1" max="30" value="20" />
+          </label>
+
+          <label>
+            Cooldown
+            <input id="neCooldown" type="text" placeholder="e.g. 4.0s or None" />
+          </label>
+          <label>
+            Stamina / Mana Cost
+            <input id="neResource" type="text" placeholder="e.g. 14 Stamina" />
+          </label>
+
+          <label>
+            Playstyle Role / Tags (comma-separated)
+            <input id="neEffects" type="text" placeholder="e.g. AoE, Freeze, Pierce, Slow" />
+          </label>
+          <label>
+            Floating Hit Status Text
+            <input id="neHitStatus" type="text" placeholder="e.g. FROZEN! or WALL-PIN STUN!" />
+          </label>
+
+          <label>
+            Live Cast Animation Pattern
+            <select id="nePattern"></select>
+          </label>
+          <div class="color-pair-field">
+            <label>Primary VFX <input id="neColor1" type="color" value="#67c4ff" /></label>
+            <label>Accent VFX <input id="neColor2" type="color" value="#ffe07d" /></label>
+            <label>Count <input id="neCount" type="number" min="1" max="16" value="5" /></label>
+            <label>Radius <input id="neRadius" type="number" min="0.5" max="6" step="0.1" value="2.0" /></label>
+          </div>
+
+          <label class="full-span">
+            Original Game &amp; Skill Inspiration
+            <input id="neSimilar" type="text" placeholder="e.g. DotA 2 · Pudge — Meat Hook + Diablo II · Freezing Arrow" />
+          </label>
+
+          <label class="full-span">
+            How the Original Game Skill Worked
+            <textarea id="neOrigHow" rows="2" placeholder="Explain how the reference skill behaved in its source game..."></textarea>
+          </label>
+
+          <label class="full-span">
+            How It Works in Blood Crown (Exact Interaction)
+            <textarea id="neMechanic" rows="3" placeholder="Describe how it aims, hits enemies, applies slow/stun/freeze/DoT, and feels in isometric combat..."></textarea>
+          </label>
+
+          <label class="full-span">
+            Tactical Combo &amp; Tree Synergy
+            <input id="neSynergy" type="text" placeholder="e.g. Pulls elites into your Plague Cloud or Warband Shieldwall..." />
+          </label>
+        </div>
+
+        <!-- Right Side: Visual 355-Icon Search & Picker -->
+        <div class="icon-picker-pane">
+          <div class="icon-picker-selected">
+            <img id="neSelectedIconImg" src="assets/icons/d2r/ama_jab.png" alt="Selected Icon" />
+            <div>
+              <div class="field-label">Selected Painted Skill Icon</div>
+              <div id="neSelectedIconPath" class="muted-sub">assets/icons/d2r/ama_jab.png</div>
+            </div>
+          </div>
+          <div class="icon-picker-controls">
+            <input id="neIconSearch" type="search" placeholder="Search 355 icons (amazon, barb, fire, hook, dota2, gw2)..." autocomplete="off" />
+            <select id="neIconGroup"></select>
+          </div>
+          <div id="neIconGrid" class="icon-picker-grid"></div>
+        </div>
+      </div>
+
+      <div class="modal-actions modal-actions-split">
+        <button id="btnDeleteNodeInModal" class="btn btn-danger-outline">✕ Rip Skill From Slot</button>
+        <div class="modal-actions-right">
+          <button class="btn btn-outline" data-close="nodeEditorModal">Cancel</button>
+          <button id="btnForkNodeSkill" class="btn btn-emerald" title="Creates a brand-new independent skill copy in this slot without altering other heroes">📋 Save as New Forked Copy</button>
+          <button id="btnSaveNodeSkill" class="btn btn-gold">💾 Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       MODAL 3: BACKUP / IMPORT / EXPORT / SHARE LINK
+       ================================================================= -->
+  <div id="dataModal" class="modal-backdrop hidden">
+    <div class="modal-card modal-medium">
+      <div class="modal-head">
+        <div>
+          <h3>📤 Backup, Import, Export &amp; Share</h3>
+          <p class="muted-sub">Export your custom heroes &amp; edited skill trees as JSON, share a build URL, or reset workspace</p>
+        </div>
+        <button class="btn-close" data-close="dataModal">✕</button>
+      </div>
+
+      <div class="backup-actions-row">
+        <button id="btnDownloadJson" class="btn btn-gold">⬇ Download Workspace (.json)</button>
+        <label class="btn btn-emerald file-upload-btn">
+          ⬆ Import JSON File
+          <input id="inputImportJsonFile" type="file" accept=".json,application/json" hidden />
+        </label>
+        <button id="btnCopyShareUrl" class="btn btn-outline">🔗 Copy Active Hero Share Link</button>
+        <button id="btnFactoryResetAll" class="btn btn-danger-outline">⚠ Reset Entire App to Factory</button>
+      </div>
+
+      <label class="full-span" style="margin-top:10px; display:block;">
+        <span class="field-label">Live JSON Snapshot (Copy or Paste JSON below and click Apply)</span>
+        <textarea id="jsonExportArea" rows="9" class="code-textarea"></textarea>
+      </label>
+
+      <div class="modal-actions">
+        <button class="btn btn-outline" data-close="dataModal">Close</button>
+        <button id="btnApplyPastedJson" class="btn btn-gold">Apply Pasted JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       MODAL 4: PWA INSTALL INSTRUCTIONS (FALLBACK WHEN ALREADY INSTALLED / IOS)
+       ================================================================= -->
+  <div id="pwaHelpModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>📲 Install Blood Crown Skill Forge (Hosted PWA)</h3>
+        <button class="btn-close" data-close="pwaHelpModal">✕</button>
+      </div>
+      <div class="pwa-instructions">
+        <p><strong>GitHub Pages PWA URL (Anywhere):</strong> <code>https://unity7.github.io/blood-crown-forge/</code></p>
+        <p><strong>Tailnet HTTPS URL:</strong> <code>https://bay.tail348c9d.ts.net:8792/</code></p>
+        <ul>
+          <li><b>Chrome / Edge / Brave (Desktop &amp; Android):</b> Click the <b>Install icon (⊕ / 💻)</b> on the right side of your browser's address bar (or menu → <i>Install Blood Crown — Skill Codex &amp; Character Forge</i>).</li>
+          <li><b>iPhone / iPad (Safari):</b> Open <code>https://unity7.github.io/blood-crown-forge/</code>, tap <b>Share (↑)</b> → <b>Add to Home Screen</b>.</li>
+          <li><b>Offline &amp; Backup:</b> All 138 skills &amp; 392 painted icons cache automatically for instant offline lookup, and custom builds save inside the app (with 1-click JSON export &amp; <code>#share=</code> links).</li>
+        </ul>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-gold" data-close="pwaHelpModal">Got It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       MODAL 5: 36-SECOND 1080P COMPANION TUTORIAL VIDEO WALKTHROUGH
+       ================================================================= -->
+  <div id="tutorialVideoModal" class="modal-backdrop hidden">
+    <div class="modal-card modal-wide tutorial-video-modal-card">
+      <div class="modal-head">
+        <div>
+          <h3>🎬 Blood Crown Skill Forge — 36s Companion Walkthrough</h3>
+          <p class="muted-sub">5-beat tour with Blood Crown town score &amp; UI SFX: 7 Classes · Skill Trees &amp; Inline Info · Weapon Mini-Builds · [A/B/C] Mutators · 60fps Arena &amp; 1-Tap Return</p>
+        </div>
+        <button id="btnCloseTutorialModal" class="btn-close" data-close="tutorialVideoModal">✕</button>
+      </div>
+
+      <div class="tutorial-video-frame">
+        <video
+          id="forgeTutorialVideoPlayer"
+          class="tutorial-video-player"
+          controls
+          playsinline
+          preload="metadata"
+          poster="assets/video/tutorial_poster.jpg"
+          src="assets/video/blood_crown_forge_tutorial.mp4"
+        ></video>
+      </div>
+
+      <div id="tutorialChapterBar" class="tutorial-chapter-bar" role="group" aria-label="Jump to video chapter">
+        <button type="button" class="tutorial-chapter-pill active" data-video-seek="0">0:00 · 1. Overview &amp; Roster</button>
+        <button type="button" class="tutorial-chapter-pill" data-video-seek="7">0:07 · 2. Trees &amp; Inline Info</button>
+        <button type="button" class="tutorial-chapter-pill" data-video-seek="14">0:14 · 3. Builds &amp; Weapons</button>
+        <button type="button" class="tutorial-chapter-pill" data-video-seek="21">0:21 · 4. [A/B/C] Mutators</button>
+        <button type="button" class="tutorial-chapter-pill" data-video-seek="28">0:28 · 5. Arena ↔ Tree Return</button>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btnDoneTutorialModal" class="btn btn-gold" data-close="tutorialVideoModal">Close Walkthrough</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastHost" class="toast-host" aria-live="polite"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
